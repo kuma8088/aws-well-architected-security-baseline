@@ -12,3 +12,8 @@ output "cloudtrail_s3_bucket_name" {
   description = "S3 bucket name for CloudTrail logs"
   value       = module.cloudtrail.s3_bucket_name
 }
+
+output "securityhub_account_id" {
+  description = "Security Hub account ID"
+  value       = module.security_hub.securityhub_account_id
+}

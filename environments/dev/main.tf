@@ -31,18 +31,24 @@ module "cloudtrail" {
 }
 
 # =============================================================================
-# Phase 2: Security Hub (uncomment when ready)
+# Phase 2: Security Hub
 # =============================================================================
 
-# module "security_hub" {
-#   source = "../../modules/security-hub"
-#
-#   project_name = var.project_name
-#   environment  = var.environment
-#
-#   enable_fsbp_standard = true
-#   enable_cis_standard  = true
-# }
+module "security_hub" {
+  source = "../../modules/security-hub"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  # Security standards
+  enable_fsbp_standard    = true  # AWS Foundational Security Best Practices
+  enable_cis_standard     = true  # CIS AWS Foundations Benchmark v1.4.0
+  enable_pci_dss_standard = false # PCI DSS (payment systems only)
+
+  # Auto-enable new controls when added
+  auto_enable_controls     = true
+  enable_default_standards = false
+}
 
 # =============================================================================
 # Phase 3: Notification (uncomment when ready)
