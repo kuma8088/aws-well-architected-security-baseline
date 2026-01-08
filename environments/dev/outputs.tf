@@ -17,3 +17,13 @@ output "securityhub_account_id" {
   description = "Security Hub account ID"
   value       = module.security_hub.securityhub_account_id
 }
+
+output "sns_topic_critical_arn" {
+  description = "ARN of the critical security alerts SNS topic"
+  value       = module.notification.critical_topic_arn
+}
+
+output "sns_topic_high_arn" {
+  description = "ARN of the high severity security alerts SNS topic"
+  value       = module.notification.high_topic_arn
+}

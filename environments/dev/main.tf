@@ -51,17 +51,18 @@ module "security_hub" {
 }
 
 # =============================================================================
-# Phase 3: Notification (uncomment when ready)
+# Phase 3: Notification
 # =============================================================================
 
-# module "notification" {
-#   source = "../../modules/notification"
-#
-#   project_name = var.project_name
-#   environment  = var.environment
-#
-#   slack_workspace_id              = var.slack_workspace_id
-#   slack_channel_security_critical = var.slack_channel_security_critical
-#   slack_channel_security_high     = var.slack_channel_security_high
-#   slack_channel_security_medium   = var.slack_channel_security_medium
-# }
+module "notification" {
+  source = "../../modules/notification"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  # Slack configuration
+  slack_workspace_id     = var.slack_workspace_id
+  slack_channel_critical = var.slack_channel_security_critical
+  slack_channel_high     = var.slack_channel_security_high
+  slack_channel_medium   = var.slack_channel_security_medium
+}
