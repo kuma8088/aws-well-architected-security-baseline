@@ -1,156 +1,138 @@
 # AWS Well-Architected Security Baseline
 
-AWS Well-Architected Framework (6 Pillars) compliant security baseline infrastructure built with Terraform.
+AWS Well-Architected Framework に準拠したセキュリティ基盤を Terraform で構築するプロジェクト。
 
-## Overview
+## 概要
 
-This project demonstrates the ability to build a security governance foundation for AWS environments, enabling security review and improvement recommendations for customer environments.
+AWS 環境のセキュリティガバナンス基盤を構築し、脅威検出・コンプライアンス監視・アラート通知を統合管理するデモンストレーション。
 
-### Target Audience
+### 対象ユーザー
 
-- Information Systems Department
-- Security Teams
-- Compliance Officers
+- 情報システム部門
+- セキュリティチーム
+- コンプライアンス担当者
 
-### Key Value Proposition
+### 価値提案
 
-- **Direct proof** of "ability to review and propose security improvements for customer environments"
-- Directly applicable to AWS consultant work (optimization advice)
-- Demonstrates capability for Black Belt lecture delivery
+- **顧客環境のセキュリティレビュー・改善提案能力**の直接的な証明
+- AWS コンサルティング業務（最適化アドバイス）に直接適用可能
+- Black Belt 講演配信能力の証明
 
-## Architecture
+## アーキテクチャ
 
-```
-Security Hub (Integrated Dashboard)
-    |
-    +-- GuardDuty ------> Threat Detection (unauthorized access, malware)
-    |
-    +-- Config ----------> Configuration Rule Violations (S3 public, no encryption, etc.)
-    |
-    +-- CloudTrail ------> API Audit Logs -> Anomaly Detection
-    |
-    +-- IAM Access Analyzer -> Excessive Permissions Detection
-    |
-    +-- Inspector -------> Vulnerability Scanning
-            |
-            v
-    EventBridge -> SNS/Slack Notification
-```
+![AWS Security Baseline Architecture](./architecture.svg)
 
-## Well-Architected 6 Pillars Alignment
+### 構成要素
 
-| Pillar | Implementation in This Portfolio |
-|:-------|:--------------------------------|
-| Security | Security Hub, GuardDuty, Config, IAM Access Analyzer |
-| Operational Excellence | CloudTrail, Automated Notifications |
-| Reliability | Multi-AZ design assumption |
-| Performance Efficiency | - |
-| Cost Optimization | - |
-| Sustainability | - |
+| レイヤー | サービス | 役割 |
+|:---------|:---------|:-----|
+| **Detection** | GuardDuty | 脅威検出（不正アクセス、マルウェア） |
+| | CloudTrail | API 監査ログ |
+| | AWS Config | リソース構成記録・Standards 評価 |
+| **Aggregation** | Security Hub | セキュリティ統合ダッシュボード |
+| | | FSBP + CIS Benchmark v1.4.0 準拠評価 |
+| **Notification** | EventBridge | 重要度別イベントルーティング |
+| | SNS | 通知配信（CRITICAL/HIGH/MEDIUM） |
+| | Chatbot | Slack 連携 |
 
-## Technology Stack
+## Well-Architected 6 柱との対応
 
-| Service | Purpose |
-|:--------|:--------|
-| **Security Hub** | Security integrated dashboard |
-| **GuardDuty** | Threat detection (unauthorized access, malware) |
-| **AWS Config** | Configuration audit (S3 public exposure, encryption status) |
-| **CloudTrail** | API audit logging |
-| **IAM Access Analyzer** | Excessive permissions detection |
-| **Inspector** | Vulnerability scanning |
-| **EventBridge** | Event routing |
-| **SNS** | Notification delivery |
+| 柱 | このポートフォリオでの実装 |
+|:---|:--------------------------|
+| セキュリティ | Security Hub, GuardDuty, Config, CloudTrail |
+| 運用上の優秀性 | CloudTrail 監査ログ, 自動通知 |
+| 信頼性 | - |
+| パフォーマンス効率 | - |
+| コスト最適化 | - |
+| 持続可能性 | - |
+
+## 技術スタック
+
+| サービス | 用途 |
+|:---------|:-----|
+| **Security Hub** | セキュリティ統合ダッシュボード |
+| **GuardDuty** | 脅威検出 |
+| **AWS Config** | 構成監査・Standards 評価 |
+| **CloudTrail** | API 監査ログ |
+| **EventBridge** | イベントルーティング |
+| **SNS** | 通知配信 |
+| **Chatbot** | Slack 連携 |
 | **Terraform** | Infrastructure as Code |
 
-## Project Structure
+## プロジェクト構成
 
 ```
 .
 ├── environments/
-│   ├── dev/           # Development environment
-│   └── prod/          # Production environment
+│   └── dev/              # 開発環境
 ├── modules/
-│   ├── security-hub/       # Security Hub configuration
-│   ├── guardduty/          # GuardDuty setup
-│   ├── config/             # AWS Config rules
-│   ├── cloudtrail/         # CloudTrail configuration
-│   ├── iam-analyzer/       # IAM Access Analyzer
-│   ├── inspector/          # Inspector configuration
-│   └── notification/       # EventBridge + SNS + Slack
+│   ├── guardduty/        # GuardDuty 設定
+│   ├── cloudtrail/       # CloudTrail + S3
+│   ├── config/           # AWS Config Recorder + S3
+│   ├── security-hub/     # Security Hub + Standards
+│   └── notification/     # EventBridge + SNS + Chatbot
 ├── docs/
-│   └── plans/         # Design and implementation plans
+│   ├── demo/             # デモシナリオ
+│   └── plans/            # 設計・拡張計画
+├── architecture.drawio   # アーキテクチャ図（編集用）
+├── architecture.svg      # アーキテクチャ図（表示用）
 └── README.md
 ```
 
-## Security Findings Flow
+## 重要度別通知設定
 
-```
-1. Detection Layer
-   +------------------+     +------------------+     +------------------+
-   |    GuardDuty     |     |   AWS Config     |     |    Inspector     |
-   | (Threat Detection)|     | (Compliance)     |     | (Vulnerability)  |
-   +--------+---------+     +--------+---------+     +--------+---------+
-            |                        |                        |
-            v                        v                        v
-2. Aggregation Layer
-   +------------------------------------------------------------------+
-   |                        Security Hub                               |
-   |  - Unified security findings view                                |
-   |  - Security score calculation                                    |
-   |  - Compliance status tracking                                    |
-   +--------------------------------+---------------------------------+
-                                    |
-                                    v
-3. Notification Layer
-   +------------------+     +------------------+     +------------------+
-   |   EventBridge    | --> |       SNS        | --> |     Slack        |
-   | (Event Routing)  |     | (Notification)   |     | (Alert Channel)  |
-   +------------------+     +------------------+     +------------------+
-```
-
-## Severity Classification
-
-| Severity | Channel | Response |
-|:---------|:--------|:---------|
-| CRITICAL | #alerts-security-critical | Immediate action required |
-| HIGH | #alerts-security-high | Same-day response |
-| MEDIUM | #alerts-security-warning | Within 1 week |
-| LOW | #alerts-security-info | Periodic review |
+| 重要度 | Slack チャンネル | 対応目安 |
+|:-------|:-----------------|:---------|
+| CRITICAL | #alerts-security-critical | 即時対応 |
+| HIGH | #alerts-security-high | 当日中 |
+| MEDIUM | #alerts-security-medium | 1週間以内 |
 
 ## Getting Started
 
-### Prerequisites
+### 前提条件
 
-- AWS CLI configured
+- AWS CLI 設定済み
 - Terraform >= 1.5.0
-- Slack workspace (for notifications)
+- Slack ワークスペース（通知用）
+- AWS Chatbot と Slack の連携済み
 
-### Quick Start
+### クイックスタート
 
 ```bash
-# Clone repository
+# リポジトリをクローン
 git clone https://github.com/kuma8088/aws-well-architected-security-baseline.git
 cd aws-well-architected-security-baseline
 
-# Configure environment
+# 環境設定
 cd environments/dev
 cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars with your values
+# terraform.tfvars を編集
 
-# Deploy
+# デプロイ
 terraform init
 terraform plan
 terraform apply
 ```
 
-## Related Projects
+### デモ実行
 
-- [AWS Observability Incident Response](https://github.com/kuma8088/aws-observability-incident-response) - Operational monitoring and incident response (PF14)
+デプロイ後、[デモシナリオ](./docs/demo/demo-scenario.md) を参照してください。
 
-## License
+## 拡張オプション
+
+将来の拡張案については [拡張オプション計画](./docs/plans/future-expansion-options.md) を参照。
+
+- Cloudflare セキュリティイベント統合
+- マルチクラウド監視ダッシュボード
+
+## 関連プロジェクト
+
+- [AWS Observability Incident Response](https://github.com/kuma8088/aws-observability-incident-response) - 運用監視・インシデント対応 (PF14)
+
+## ライセンス
 
 MIT License
 
-## Author
+## 作成者
 
 Naoya Iimura
