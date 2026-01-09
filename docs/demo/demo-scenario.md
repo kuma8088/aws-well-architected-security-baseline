@@ -56,6 +56,12 @@
    - Security Hub の Findings に GuardDuty の検出が表示されていることを確認
    - フィルタ: `Product name = GuardDuty`
 
+### 注意事項
+
+> **Sample Findings は Slack 通知をトリガーしません**
+> AWS の仕様として、Sample Findings は EventBridge に送信されません。
+> Slack 通知を確認したい場合は Demo 3 のテストイベント送信を使用してください。
+
 ### 説明ポイント
 
 ```
@@ -70,27 +76,49 @@
 
 ### 手順
 
-1. **Slack チャンネルを開く**
-   - `#alerts-security-critical` を確認
-   - Sample Findings の HIGH/CRITICAL が通知されているはず
+1. **テストイベントを送信**
 
-2. **通知内容を確認**
+   以下のコマンドで各重要度のテストイベントを送信:
+
+   ```bash
+   # CRITICAL テスト
+   aws events put-events --entries '[
+     {
+       "Source": "aws.securityhub",
+       "DetailType": "Security Hub Findings - Imported",
+       "Detail": "{\"findings\":[{\"Title\":\"[TEST] CRITICAL - Unauthorized API Call Detected\",\"Severity\":{\"Label\":\"CRITICAL\"},\"Workflow\":{\"Status\":\"NEW\"},\"Resources\":[{\"Id\":\"arn:aws:iam::552927148143:user/test-user\",\"Type\":\"AwsIamUser\"}],\"AwsAccountId\":\"552927148143\",\"Region\":\"ap-northeast-1\",\"Description\":\"This is a test finding for CRITICAL severity.\",\"ProductArn\":\"arn:aws:securityhub:ap-northeast-1::product/aws/securityhub\",\"GeneratorId\":\"test-generator\",\"SchemaVersion\":\"2018-10-08\",\"Id\":\"test-finding-critical\"}]}"
+     }
+   ]'
+
+   # HIGH テスト
+   aws events put-events --entries '[
+     {
+       "Source": "aws.securityhub",
+       "DetailType": "Security Hub Findings - Imported",
+       "Detail": "{\"findings\":[{\"Title\":\"[TEST] HIGH - Security Group Allows All Traffic\",\"Severity\":{\"Label\":\"HIGH\"},\"Workflow\":{\"Status\":\"NEW\"},\"Resources\":[{\"Id\":\"arn:aws:ec2:ap-northeast-1:552927148143:security-group/sg-test\",\"Type\":\"AwsEc2SecurityGroup\"}],\"AwsAccountId\":\"552927148143\",\"Region\":\"ap-northeast-1\",\"Description\":\"This is a test finding for HIGH severity.\",\"ProductArn\":\"arn:aws:securityhub:ap-northeast-1::product/aws/securityhub\",\"GeneratorId\":\"test-generator\",\"SchemaVersion\":\"2018-10-08\",\"Id\":\"test-finding-high\"}]}"
+     }
+   ]'
+
+   # MEDIUM テスト
+   aws events put-events --entries '[
+     {
+       "Source": "aws.securityhub",
+       "DetailType": "Security Hub Findings - Imported",
+       "Detail": "{\"findings\":[{\"Title\":\"[TEST] MEDIUM - CloudTrail Not Enabled in All Regions\",\"Severity\":{\"Label\":\"MEDIUM\"},\"Workflow\":{\"Status\":\"NEW\"},\"Resources\":[{\"Id\":\"arn:aws:cloudtrail:ap-northeast-1:552927148143:trail/test-trail\",\"Type\":\"AwsCloudTrailTrail\"}],\"AwsAccountId\":\"552927148143\",\"Region\":\"ap-northeast-1\",\"Description\":\"This is a test finding for MEDIUM severity.\",\"ProductArn\":\"arn:aws:securityhub:ap-northeast-1::product/aws/securityhub\",\"GeneratorId\":\"test-generator\",\"SchemaVersion\":\"2018-10-08\",\"Id\":\"test-finding-medium\"}]}"
+     }
+   ]'
+   ```
+
+2. **Slack チャンネルを確認**
+   - `#alerts-security-critical` → CRITICAL の通知
+   - `#alerts-security-high` → HIGH の通知
+   - `#alerts-security-medium` → MEDIUM の通知
+
+3. **通知内容を確認**
    - Severity（重要度）
    - Finding Title（検出内容）
    - Resource（対象リソース）
    - Region / Account
-
-3. **（オプション）EventBridge でテストイベントを送信**
-   ```bash
-   # AWS CLI でテストイベントを送信
-   aws events put-events --entries '[
-     {
-       "Source": "demo.test",
-       "DetailType": "Security Hub Findings - Imported",
-       "Detail": "{\"findings\":[{\"Title\":\"Test Finding\",\"Severity\":{\"Label\":\"CRITICAL\"},\"Workflow\":{\"Status\":\"NEW\"},\"Resources\":[{\"Id\":\"test-resource\"}],\"AwsAccountId\":\"552927148143\",\"Region\":\"ap-northeast-1\",\"Description\":\"This is a test finding\"}]}"
-     }
-   ]'
-   ```
 
 ### 説明ポイント
 
@@ -144,6 +172,7 @@ terraform destroy -auto-approve
 
 - GuardDuty Detector
 - CloudTrail + S3 Bucket
+- AWS Config Recorder + S3 Bucket
 - Security Hub + Standards
 - SNS Topics
 - EventBridge Rules
@@ -166,14 +195,24 @@ terraform destroy -auto-approve
    - Console で「Rules」を確認
    - 「Monitoring」タブでイベントがマッチしているか
 
-### Security Hub の Findings が表示されない
+### Security Hub の Findings が表示されない / 「計算できません」と表示される
 
-1. **Standards が有効か確認**
+1. **AWS Config が有効か確認**
+   - AWS Console → Config → Settings
+   - 「Recording is on」になっているか確認
+   - Security Hub の Standards は AWS Config のルールで評価される
+
+2. **Standards が有効か確認**
    - Security Hub → Security standards
    - FSBP / CIS が「Enabled」になっているか
 
-2. **初回スキャン完了を待つ**
-   - 有効化後、最初のスキャン完了まで 15-30 分かかる場合あり
+3. **初回スキャン完了を待つ**
+   - Config 有効化後、最初の評価完了まで 15-30 分かかる場合あり
+
+### GuardDuty Sample Findings で Slack 通知が来ない
+
+> **これは AWS の仕様です。** Sample Findings は EventBridge に送信されません。
+> Slack 通知をテストするには、Demo 3 のテストイベント送信を使用してください。
 
 ### GuardDuty の Findings が Security Hub に連携されない
 

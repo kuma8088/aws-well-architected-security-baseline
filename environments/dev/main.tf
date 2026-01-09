@@ -30,6 +30,15 @@ module "cloudtrail" {
   log_retention_days            = 90
 }
 
+module "config" {
+  source = "../../modules/config"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  recording_all_resources = true
+}
+
 # =============================================================================
 # Phase 2: Security Hub
 # =============================================================================
