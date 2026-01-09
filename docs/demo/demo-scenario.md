@@ -13,18 +13,17 @@
    - https://ap-northeast-1.console.aws.amazon.com/securityhub/
 
 2. **セキュリティスコアを確認**
-   - 左メニュー「Summary」をクリック
-   - 「Security score」を確認（初回は 50-70% 程度）
+   - トップページでセキュリティスコアを確認（初回は 50-70% 程度）
 
-3. **Findings を確認**
-   - 左メニュー「Findings」をクリック
-   - フィルタ追加: `Severity label = CRITICAL`
-   - 具体的な違反内容を確認
-
-4. **Standards を確認**
+3. **Security standards を確認**
    - 左メニュー「Security standards」をクリック
    - 「AWS Foundational Security Best Practices」の準拠率を確認
    - 「CIS AWS Foundations Benchmark」の準拠率を確認
+
+4. **Findings を確認**
+   - 左メニュー「Findings」をクリック
+   - フィルタ追加: `Severity label = CRITICAL`
+   - 具体的な違反内容を確認
 
 ### 説明ポイント
 
