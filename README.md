@@ -29,6 +29,16 @@ AWS 環境の脅威検出・コンプライアンス監視・アラート通知�
 | | SNS | 通知配信（CRITICAL/HIGH/MEDIUM） |
 | | Chatbot | Slack 連携 |
 
+### スクリーンショット
+
+**Security Hub** - セキュリティ統合ダッシュボード
+
+![Security Hub](./SecurityHub%20screenshot.png)
+
+**GuardDuty** - 脅威検出
+
+![GuardDuty](./GuardDuty%20screenshot.png)
+
 ## Well-Architected 6 柱との対応
 
 | 柱 | このポートフォリオでの実装 |
